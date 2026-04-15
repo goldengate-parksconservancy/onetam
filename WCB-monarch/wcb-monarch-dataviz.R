@@ -6,6 +6,9 @@
 
 # ----------------------------------------------------------------------
 
+# -------------------------------------------------------------------------
+
+
 # Set up ----
 # libraries 
 library(tidyverse)
@@ -18,7 +21,7 @@ showtext_auto(enable = TRUE)
 
 # Data ----
 # create dataset based on monarch annual summary tables
-monarch_data <- data.frame(
+milkweed_data <- data.frame(
   site = c("Joske Grove", "Joske Grove", "Joske Grove",
            "Joske Grove", "Joske Grove", "Joske Grove",
            
@@ -28,14 +31,14 @@ monarch_data <- data.frame(
            "Bowman Bridge", "Bowman Bridge", "Bowman Bridge",
            "Bowman Bridge", "Bowman Bridge", "Bowman Bridge"),
   
-  status = c("Baseline average", "Post-planting Year 1", "Post-planting Year 2",
-             "Baseline average", "Post-planting Year 1", "Post-planting Year 2",
+  status = c("Baseline average\n(2022 & 2023)", "Post-planting Year 1\n(2024)", "Post-planting Year 2\n(2025)",
+             "Baseline average\n(2022 & 2023)", "Post-planting Year 1\n(2024)", "Post-planting Year 2\n(2025)",
              
-             "Baseline average", "Post-planting Year 1", "Post-planting Year 2",
-             "Baseline average", "Post-planting Year 1", "Post-planting Year 2",
+             "Baseline average\n(2022 & 2023)", "Post-planting Year 1\n(2024)", "Post-planting Year 2\n(2025)",
+             "Baseline average\n(2022 & 2023)", "Post-planting Year 1\n(2024)", "Post-planting Year 2\n(2025)",
              
-             "Baseline average", "Post-planting Year 1", "Post-planting Year 2",
-             "Baseline average", "Post-planting Year 1", "Post-planting Year 2"),
+             "Baseline average\n(2022 & 2023)", "Post-planting Year 1\n(2024)", "Post-planting Year 2\n(2025)",
+             "Baseline average\n(2022 & 2023)", "Post-planting Year 1\n(2024)", "Post-planting Year 2\n(2025)"),
   
   type = c("Plants", "Plants", "Plants",
            "Stems", "Stems", "Stems",
@@ -52,24 +55,43 @@ monarch_data <- data.frame(
             239, 354, 792,
             
             0, 21, 51,
-            0, 35, 79)
+            0, 35, 79),
+  survivorship = c(NA, "52%", "77%",
+                   NA, "81%", "104%",
+                   
+                   NA, "64%", "169%",
+                   NA, "86%", "274%",
+                   
+                   NA, "6%", "19%",
+                   NA, "10%", "29%")
 )
+
 
 
 # Graphing ----
 # Joske Grove plants & stems
-joske_plot <- monarch_data |>
+joske_plot <- milkweed_data |>
   filter(site == "Joske Grove") |> 
   ggplot( aes(x = status, y = count)) +
   geom_col(fill = "#D89FAE") +
+  
+  
+ # survivorship labels
+  geom_text(aes(label = survivorship),
+    vjust = -0.5,
+    size = 3.5,
+    family = "Lato") +
+  
   facet_wrap(~ type, ncol = 2, nrow = 1) + 
   
-  labs(title = "Milkweed Surviviorship at Joske Grove") +
+  labs(title = "Narrow-leaf Milkweed Survivorship at Joske Grove", 
+       x = "Monitoring Period",
+       y = "Count") +
   
   theme_light() +
   theme(
-    axis.title.x = element_blank(), 
-    axis.title.y = element_blank(),
+    axis.title.x = element_text(family = "Lato", size = 12), 
+    axis.title.y = element_text(family = "Lato", size = 12),
     plot.title = element_text(family = "Lato", size = 18),
     axis.text = element_text(family = "Lato", size = 10),
     
@@ -88,18 +110,27 @@ joske_plot <- monarch_data |>
 joske_plot  
 
 # San carlos way plants and stems plot
-sancarlos_plot <- monarch_data |>
+sancarlos_plot <- milkweed_data |>
   filter(site == "San Carlos Way") |> 
   ggplot( aes(x = status, y = count)) +
   geom_col(fill = "#D89FAE") +
+ 
+   # survivorship labels
+  geom_text(aes(label = survivorship),
+            vjust = -0.5,
+            size = 3.5,
+            family = "Lato") +
+  
   facet_wrap(~ type, ncol = 2, nrow = 1) + 
   
-  labs(title = "Milkweed Surviviorship at San Carlos Way") +
+  labs(title = "Narrow-leaf Milkweed Survivorship at San Carlos Way", 
+       x = "Monitoring Period",
+       y = "Count") +
   
   theme_light() +
   theme(
-    axis.title.x = element_blank(), 
-    axis.title.y = element_blank(),
+    axis.title.x = element_text(family = "Lato", size = 12), 
+    axis.title.y = element_text(family = "Lato", size = 12),
     plot.title = element_text(family = "Lato", size = 18),
     axis.text = element_text(family = "Lato", size = 10),
     
@@ -117,18 +148,27 @@ sancarlos_plot <- monarch_data |>
 sancarlos_plot  
 
 # Bowman Bridge plants and stems plot 
-bowman_plot <- monarch_data |>
+bowman_plot <- milkweed_data |>
   filter(site == "Bowman Bridge") |> 
   ggplot( aes(x = status, y = count)) +
   geom_col(fill = "#D89FAE") +
+  
+  # survivorship labels
+  geom_text(aes(label = survivorship),
+            vjust = -0.5,
+            size = 3.5,
+            family = "Lato") +
+  
   facet_wrap(~ type, ncol = 2, nrow = 1) + 
   
-  labs(title = "Milkweed Surviviorship at Bowman Bridge") +
+  labs(title = "Narrow-leaf Milkweed Survivorship at Bowman Bridge", 
+       x = "Monitoring Period",
+       y = "Count") +
   
   theme_light() +
   theme(
-    axis.title.x = element_blank(), 
-    axis.title.y = element_blank(),
+    axis.title.x = element_text(family = "Lato", size = 12), 
+    axis.title.y = element_text(family = "Lato", size = 12),
     plot.title = element_text(family = "Lato", size = 18),
     axis.text = element_text(family = "Lato", size = 10),
     
@@ -148,26 +188,26 @@ bowman_plot
 
 # Export ----
 # save as svg files
-ggsave(
-  filename = here::here("WCB-monarch", "plot-exports", "joske_plot.svg"),
-  plot = joske_plot,
-  device = svg,
-  width = 9.5,
-  height = 5
-)
-
-ggsave(
-  filename = here::here("WCB-monarch", "plot-exports", "sancarlos_plot.svg"),
-  plot = sancarlos_plot,
-  device = svg,
-  width = 9.5,
-  height = 5
-)
-
-ggsave(
-  filename = here::here("WCB-monarch", "plot-exports", "bowman_plot.svg"),
-  plot = bowman_plot,
-  device = svg,
-  width = 9.5,
-  height = 5
-)
+# ggsave(
+#   filename = here::here("WCB-monarch", "plot-exports", "joske_plot.svg"),
+#   plot = joske_plot,
+#   device = svg,
+#   width = 9.5,
+#   height = 5
+# )
+# 
+# ggsave(
+#   filename = here::here("WCB-monarch", "plot-exports", "sancarlos_plot.svg"),
+#   plot = sancarlos_plot,
+#   device = svg,
+#   width = 9.5,
+#   height = 5
+# )
+# 
+# ggsave(
+#   filename = here::here("WCB-monarch", "plot-exports", "bowman_plot.svg"),
+#   plot = bowman_plot,
+#   device = svg,
+#   width = 9.5,
+#   height = 5
+# )
