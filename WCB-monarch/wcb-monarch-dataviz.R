@@ -12,6 +12,7 @@
 # Set up ----
 # libraries 
 library(tidyverse)
+library(readxl)
 library(here)
 library(showtext)
 
@@ -20,80 +21,67 @@ font_add_google(name = "Lato", family = "Lato")
 showtext_auto(enable = TRUE)
 
 # Data ----
-# create dataset based on monarch annual summary tables
-milkweed_data <- data.frame(
-  site = c("Joske Grove", "Joske Grove", "Joske Grove",
-           "Joske Grove", "Joske Grove", "Joske Grove",
-           
-           "San Carlos Way", "San Carlos Way", "San Carlos Way",
-           "San Carlos Way", "San Carlos Way", "San Carlos Way",
-           
-           "Bowman Bridge", "Bowman Bridge", "Bowman Bridge",
-           "Bowman Bridge", "Bowman Bridge", "Bowman Bridge"),
-  
-  status = c("Baseline average\n(2022 & 2023)", "Post-planting Year 1\n(2024)", "Post-planting Year 2\n(2025)",
-             "Baseline average\n(2022 & 2023)", "Post-planting Year 1\n(2024)", "Post-planting Year 2\n(2025)",
-             
-             "Baseline average\n(2022 & 2023)", "Post-planting Year 1\n(2024)", "Post-planting Year 2\n(2025)",
-             "Baseline average\n(2022 & 2023)", "Post-planting Year 1\n(2024)", "Post-planting Year 2\n(2025)",
-             
-             "Baseline average\n(2022 & 2023)", "Post-planting Year 1\n(2024)", "Post-planting Year 2\n(2025)",
-             "Baseline average\n(2022 & 2023)", "Post-planting Year 1\n(2024)", "Post-planting Year 2\n(2025)"),
-  
-  type = c("Plants", "Plants", "Plants",
-           "Stems", "Stems", "Stems",
-           
-           "Plants", "Plants", "Plants",
-           "Stems", "Stems", "Stems",
-           
-           "Plants", "Plants", "Plants",
-           "Stems", "Stems", "Stems"), 
-  count = c(1172, 689, 962,
-            1682, 1494, 1831, 
-            
-            186, 229, 398,
-            239, 354, 792,
-            
-            0, 21, 51,
-            0, 35, 79),
-  survivorship = c(NA, "52%", "77%",
-                   NA, "81%", "104%",
-                   
-                   NA, "64%", "169%",
-                   NA, "86%", "274%",
-                   
-                   NA, "6%", "19%",
-                   NA, "10%", "29%")
-)
+
+# Read in 'milkweed_tidydata' sheet from milkweed_tidydata 
+milkweed_data <- read_excel(here("WCB-monarch", "data", "milkweed_tidydata.xlsx"), sheet = "milkweed_tidydata", na = "NA")
 
 
+# Create annotation column
+milkweed_data <- milkweed_data |> 
+  mutate(annotation = case_when(site_name == "Joske Grove" & type == "Plants" & origin == "Planted" & count_monitoring == 86 ~ "52% of planted\nsurvived", 
+                                site_name == "Joske Grove" & type == "Plants" & origin == "Planted" & count_monitoring == 54 ~ "68% of planted\nsurvived",
+                                site_name == "San Carlos Way" & type == "Plants" & origin == "Planted" & count_monitoring == 43 ~ "25% of planted\nsurvived",
+                                site_name == "San Carlos Way" & type == "Plants" & origin == "Planted" & count_monitoring == 212 ~ "424% of planted\nsurvived",
+                                site_name == "Bowman Bridge" & type == "Plants" & origin == "Planted" & count_monitoring == 21 ~ "6% of planted\nsurvived", 
+                                site_name == "Bowman Bridge" & type == "Plants" & origin == "Planted" & count_monitoring == 51 ~ "19% of planted\nsurvived", 
+                                TRUE ~ NA))
+# Alter monitoring_year column so years are below 
+milkweed_data <- milkweed_data |> 
+  mutate(monitoring_year2 = case_when(monitoring_year == "Baseline average (2022 & 2023)" ~ "Baseline average\n(2022 & 2023)",
+                                      monitoring_year == "Post-planting Year 1 (2024)" ~ "Post-planting Year 1\n(2024)",
+                                      monitoring_year == "Post-planting Year 2 (2025)" ~ "Post-planting Year 2\n(2025)")) |> 
+  select(c(-monitoring_year)) |> 
+  rename("monitoring_year" = "monitoring_year2")
 
 # Graphing ----
-# Joske Grove plants & stems
+
+
+# Joske Grove stacked bar plot
 joske_plot <- milkweed_data |>
-  filter(site == "Joske Grove") |> 
-  ggplot( aes(x = status, y = count)) +
-  geom_col(fill = "#D89FAE") +
-  
-  
- # survivorship labels
-  geom_text(aes(label = survivorship),
-    vjust = -0.5,
-    size = 3.5,
-    family = "Lato") +
+  filter(site_name == "Joske Grove") |> 
+  ggplot( aes(x = monitoring_year, y = count_monitoring, fill = origin)) +
+  geom_col() +
   
   facet_wrap(~ type, ncol = 2, nrow = 1) + 
+  scale_fill_manual(values = c("Wild" = "#D89FAE", "Planted" = "#6C3A5C")) +
   
-  labs(title = "Narrow-leaf Milkweed Survivorship at Joske Grove", 
+  labs(title = "Narrow-leaf Milkweed Monitoring Counts at Joske Grove", 
        x = "Monitoring Period",
-       y = "Count") +
+       y = "Count",
+       fill = "Plant Origin") +
   
+  # % annotations 
+  geom_text( aes(x = monitoring_year, 
+                 y = count_monitoring,
+                 label = annotation),
+             position = position_stack(vjust = 1),
+             vjust = -0.5,
+             size = 3.5,
+             family = "Lato") +
+
   theme_light() +
   theme(
+    # text
     axis.title.x = element_text(family = "Lato", size = 12), 
     axis.title.y = element_text(family = "Lato", size = 12),
     plot.title = element_text(family = "Lato", size = 18),
     axis.text = element_text(family = "Lato", size = 10),
+    
+    # legend
+    legend.title = element_text(family = "Lato", size = 10), 
+    legend.position = c(0.07, 0.85),
+    legend.background = element_rect(fill = "grey85"),
+    legend.text = element_text(family = "Lato", size = 8),
     
     # facet title box
     strip.background = element_rect(
@@ -123,7 +111,7 @@ sancarlos_plot <- milkweed_data |>
   
   facet_wrap(~ type, ncol = 2, nrow = 1) + 
   
-  labs(title = "Narrow-leaf Milkweed Survivorship at San Carlos Way", 
+  labs(title = "Narrow-leaf Milkweed Monitoring Counts at San Carlos Way", 
        x = "Monitoring Period",
        y = "Count") +
   
@@ -133,6 +121,8 @@ sancarlos_plot <- milkweed_data |>
     axis.title.y = element_text(family = "Lato", size = 12),
     plot.title = element_text(family = "Lato", size = 18),
     axis.text = element_text(family = "Lato", size = 10),
+    
+    
     
     # facet title box
     strip.background = element_rect(
